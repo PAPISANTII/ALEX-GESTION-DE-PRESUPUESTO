@@ -117,6 +117,77 @@ function CrearGasto(descripcion, valor, fechaStr) {
       }
       this.anyadirEtiquetas.apply(this, extras);
   }
+
+  this.obtenerPeriodoAgrupacion = function(periodo){
+    const fechaObj = new Date(this.fecha);
+    const year = fechaObj.getFullYear();
+    const month = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
+    const day = fechaObj.getDate().toString().padStart(2, '0');
+
+    if (periodo === "dia"){
+      return `${year}-${month}-${day}`;
+    } else if (periodo === "mes"){
+      return `${year}-${month}`;
+    }else if (periodo === "anyo"){
+      return `${year}`;
+    } else {
+      return "";
+    }
+  }
+}
+
+function filtrarGastos(filtros){
+  return gastos.filter(gasto => {
+    if (filtros.fechaDesde){
+      const fechaDesdeTs = Date.parse(filtros.fechaDesde);
+      if (gasto.fecha < fechaDesdeTs) return false;
+    }
+
+    if (filtros.fechaHasta){
+      const fechaHastaTs = Date.parse(filtros.fechaHasta);
+      if (gasto.fecha > fechaHastaTs) return false;
+    }
+    
+    if (typeof filtros.valorMinimo === "number"){
+      if (gasto.valor < filtros.valorMinimo) return false;
+    }
+
+    if (typeof filtros.valorMaximo === "number"){
+      if (gasto.valor > filtros.valorMaximo) return false;
+    }
+
+    if (filtros.descripcionContiene){
+      if(!gasto.descripcion.toLowerCase().includes(filtros.descripcionContiene.toLowerCase())) return false;
+    }
+
+    if (Array.isArray(filtros.etiquetasTiene) && filtros.etiquetasTiene.length > 0){
+      const etiquetasFiltro = filtros.etiquetasTiene.map(et => et.toLowerCase());
+      const etiquetasGasto = gasto.etiquetas.map(et => et.toLowerCase());
+      if (!etiquetasGasto.some(et => etiquetasFiltro.includes(et))) return false;
+    }
+
+    return true;
+  });
+
+}
+
+function agruparGastos(periodo = "mes", etiquetas = [], fechaDesde, fechaHasta){
+  let gastosFiltrados = gastos;
+
+  if(fechaDesde || fechaHasta || (etiquetas && etiquetas.length > 0)){
+    gastosFiltrados = filtrarGastos({
+      fechaDesde,
+      fechaHasta,
+      etiquetasTiene: etiquetas
+    });
+  }
+
+  return gastosFiltrados.reduce((acc, gasto) => {
+    const clave = gasto.obtenerPeriodoAgrupacion(periodo);
+    if (!acc[clave]) acc[clave] = 0;
+    acc[clave] += gasto.valor;
+    return acc;
+  }, {});
 }
 
 
@@ -160,5 +231,7 @@ export {
     anyadirGasto,
     borrarGasto,
     calcularTotalGastos,
-    calcularBalance
+    calcularBalance,
+    filtrarGastos,
+    agruparGastos
 };
