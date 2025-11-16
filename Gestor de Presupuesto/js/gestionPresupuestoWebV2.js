@@ -3,8 +3,30 @@ import {
     anyadirGasto,
     borrarGasto,
     calcularTotalGastos,
+    sobrescribirGastos,
 } from './gestionPresupuesto.js';
 
+const NOMBRE_CLAVE="mi_gestor_gastos";
+
+document.getElementById('guardar-gastos').addEventListener('click', () => {
+    const lista = listarGastos(); 
+    localStorage.setItem(NOMBRE_CLAVE, JSON.stringify(lista)); //guarda el listado de gastos y convierte la lista a textoJSON 
+    alert('Gastos guardados en localStorage');
+});
+
+document.getElementById('recuperar-gastos').addEventListener('click', () => {
+    const datos = localStorage.getItem(NOMBRE_CLAVE);
+    if (!datos){
+        alert('No hay gastos guardados.');
+        return;
+    }
+
+    const arrayGastos = JSON.parse(datos); //convierte el textoJSON a un array de objetos
+    sobrescribirGastos(arrayGastos);
+    pintarTotal();
+    pintarListado();
+    alert('Gastos recuperados desde localStorage');
+});
 
 const templateGasto = document.createElement('template');
 templateGasto.innerHTML = `

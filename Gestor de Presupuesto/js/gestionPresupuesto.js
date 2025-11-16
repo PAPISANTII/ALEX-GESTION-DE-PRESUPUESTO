@@ -222,6 +222,15 @@ function calcularBalance(){
   return presupuesto - calcularTotalGastos();
 }
 
+function sobrescribirGastos(nuevaLista){
+  gastos =[];
+  idGasto = 0;
+  nuevaLista.forEach(gasto => { //
+    let nuevoGasto = new CrearGasto(gasto.descripcion, gasto.valor, gasto.fecha); //Crea un nuevo gasto con los datos basicos
+    if (Array.isArray(gasto.etiquetas)) nuevoGasto.etiquetas = gasto.etiquetas; //Si tiene etiquetas, las añade
+    anyadirGasto(nuevoGasto);
+  });
+}
 // Exportación de funciones
 export {
     mostrarPresupuesto,
@@ -233,5 +242,6 @@ export {
     calcularTotalGastos,
     calcularBalance,
     filtrarGastos,
-    agruparGastos
+    agruparGastos,
+    sobrescribirGastos,
 };
